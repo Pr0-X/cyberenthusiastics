@@ -1,11 +1,10 @@
 <template>
     <v-content>
+        <HomeNavBar/>
         <section id="hero">
             <v-row no-gutters>
                 <v-img
-                    :min-height="
-                        'calc(100vh - ' + $vuetify.application.top + 'px)'
-                    "
+                    :min-height="'calc(100vh - ' + $vuetify.application.top + 'px)'"
                     src="https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1951&q=80"
                 >
                     <v-theme-provider dark>
@@ -226,9 +225,10 @@
 </template>
 
 <script>
+import HomeNavBar from "../components/HomeNavbar";
 export default {
     components: {
-        // HelloWorld
+        HomeNavBar
     },
     data() {
         return {

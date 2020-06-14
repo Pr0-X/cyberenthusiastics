@@ -1,6 +1,7 @@
 <template>
     <v-app>
         <v-content>
+        <HomeNavBar />
             <v-row align="center" justify="center">
                 <v-col class="hidden-sm-and-down" cols="4" xl="4">
                     <v-card color="primary--text" outlined raised width="100%">
@@ -229,6 +230,7 @@
 </template>
 
 <script>
+import HomeNavBar from "../components/HomeNavbar";
 import { required, email, minLength, sameAs } from "vuelidate/lib/validators";
 export default {
     data() {
@@ -246,6 +248,7 @@ export default {
             ]
         };
     },
+    components: {HomeNavBar},
     validations: {
         name: {
             required,

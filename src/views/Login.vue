@@ -1,12 +1,15 @@
 <template>
     <v-app>
-        <router-link to="register"></router-link>
-
-        <router-view />
         <v-content>
+            <HomeNavBar />
             <v-row align="center" justify="center">
                 <v-col class="hidden-sm-and-down" cols="4" xl="3">
                     <v-card color="primary--text" outlined raised width="100%">
+                        <v-progress-linear
+                            v-if="loginLoad"
+                            indeterminate
+                            color="green"
+                        ></v-progress-linear>
                         <v-card-title
                             class="login-form-header font-weight-black"
                         >
@@ -44,6 +47,7 @@
                                             :error-messages="passwordErrors"
                                             autocomplete="current-password"
                                             class="password-login"
+                                            id="password"
                                             label="Password"
                                             name="password"
                                             outlined
@@ -93,6 +97,11 @@
 
                 <v-col width="100%" class="hidden-md-and-up ma-2">
                     <v-card color="primary--text" outlined raised width="100%">
+                        <v-progress-linear
+                            v-if="loginLoad"
+                            indeterminate
+                            color="green"
+                        ></v-progress-linear>
                         <v-card-title class="small-login-form-header">
                             Login
                         </v-card-title>
@@ -138,6 +147,11 @@
                                         </v-text-field>
                                     </v-col>
                                 </v-row>
+                                <v-row>
+                                    <v-col>
+                                        <p>{invalidlogin}</p>
+                                    </v-col>
+                                </v-row>
 
                                 <v-row>
                                     <v-col>
@@ -154,7 +168,7 @@
                                         <v-btn
                                             class="login-btn text-capitalize"
                                             color="primary--text"
-                                            @click.preventDefault="login()"
+                                            @click="login()"
                                         >
                                             Login
                                         </v-btn>
@@ -175,18 +189,45 @@
                     </v-card>
                 </v-col>
             </v-row>
+            <v-dialog v-model="unauthorized" max-width="300" light persistent>
+                <v-card>
+                    <v-card-title class="headline"
+                        >Login Credentials Not Valid</v-card-title
+                    >
+
+                    <v-card-text
+                        >Sorry the credentials provided doesnot match our
+                        database.</v-card-text
+                    >
+
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            color="red darken-1"
+                            text
+                            @click="unauthorized = false"
+                            >Try Again</v-btn
+                        >
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-content>
     </v-app>
 </template>
 <script>
+import HomeNavBar from "../components/HomeNavbar";
 import { required, email } from "vuelidate/lib/validators";
 export default {
     data() {
         return {
             email: "",
-            password: ""
+            password: "",
+            invalidlogin: "",
+            loginLoad: false,
+            unauthorized: false
         };
     },
+    components: { HomeNavBar },
     validations: {
         email: {
             required,
@@ -216,25 +257,29 @@ export default {
             this.$v.$touch();
             if (this.$v.$invalid) return;
             let currentObj = this;
+            currentObj.loginLoad = true;
             this.axios
-                .post("http://projectcyber.test/api/login", {
+                .post("http://cyber.test/api/login", {
                     email: this.email,
                     password: this.password
                 })
                 .then(function(response) {
-                    currentObj.output = response.data;
-                    console.log(currentObj.output);
-                    this.$router.push({ name: "home" });
-                    // window.location.href="/api/home?api_token=" + currentObj.output.access_token;
-                    // axios.head("http://projectcyber.test/api/home",{
-                    //         header: {
-                    //             "Authorization": "Bearer " + currentObj.output.access_token,
-                    //             "Accept": "application/json",
-                    //     }})
-                    //    .then(response => (this.info = response))
+                    const authUser = {};
+                    if (response.status === 200) {
+                        authUser.access_token = response.data.access_token;
+                        authUser.refresh_token = response.data.refresh_token;
+                        window.localStorage.setItem(
+                            "authUser",
+                            JSON.stringify(authUser)
+                        );
+                        currentObj.$router.push({ name: "Dashboard" });
+                    }
                 })
                 .catch(function(error) {
+                    currentObj.loginLoad = false;
                     currentObj.output = error;
+                    currentObj.unauthorized = true;
+                    console.log(currentObj.output);
                 });
         },
         forgotPassLink() {
